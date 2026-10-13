@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+*.spec
+undiced/
+MagicUndicer-CLI.exe
+MagicUndicer.exe
+# Keep extracted game assets outside this repository.

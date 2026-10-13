@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "magicundicer"
+version = "0.4.1"
+description = "Bulk reconstruct Utage / AnaDos diced atlases using MonoBehaviour JSON"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["Pillow>=10,<13"]
+
+[project.optional-dependencies]
+gui = ["tkinterdnd2>=0.6,<0.7"]
+
+[project.gui-scripts]
+magicundicer-gui = "magicundicer.gui:main"
+
+[project.scripts]
+magicundicer = "magicundicer.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

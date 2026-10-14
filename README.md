@@ -1,28 +1,27 @@
-![magicundicer](image.png)
+<p align="center">
+  <img src="assets/magicundicer-logo.png" alt="MagicUndicer" width="600">
+</p>
+
 # MagicUndicer
 
-A GUI/CLI for a image unpack from the units back to images.
-Download it on [here](https://github.com/kitzure/MagicUndicer/releases)
+Rebuild original images from diced texture atlases using a simple **GUI or CLI**. Made for Utage / AnaDos-style exports, without Excel commands or temporary tile files.
 
-# How does it works
+[Download for Windows](https://github.com/kitzure/MagicUndicer/releases) · No Python installation needed.
 
-From AssetStudio, export the **Texture2D atlas images** and the matching **MonoBehaviour as JSON**. You can use `.json` or a `.txt` containing valid JSON. Atlases may be PNG, JPEG, WebP, TGA, BMP, or TIFF; matching uses the image filename without its extension. Lossless atlas exports preserve pixels best.
+## How to use
 
-The JSON must contain `cellSize`, `padding`, and `textureDataList`. Each image record needs `name`, `atlasName`, `width`, `height`, `cellIndexList`, and optionally `transparentIndex` (default `-1`). For example:
+1. Export the **Texture2D atlas images** and matching **MonoBehaviour JSON** from AssetStudio.
+2. Open `MagicUndicer.exe`, add the atlas and JSON, and choose a save folder.
+3. Click **Undice images**. Use **Import export folder** to process a whole folder.
 
-```json
-{
-  "cellSize": 64,
-  "padding": 3,
-  "textureDataList": [{
-    "name": "fg_example_0",
-    "atlasName": "fg_example_Atlas0",
-    "width": 58,
-    "height": 58,
-    "cellIndexList": [0],
-    "transparentIndex": -1
-  }]
-}
+Only selected files are processed. One atlas can produce many images, depending on its JSON.
+
+**Why is the JSON needed?** The atlas stores the small image tiles; the MonoBehaviour JSON tells the app their order, padding, and original image sizes. The image alone is not enough to rebuild them.
+
+Prefer the terminal?
+
+```powershell
+.\windows\MagicUndicer-CLI.exe "atlas.png" "metadata.json" -o "restored"
 ```
 
-The atlas alone does not contain the image order or original dimensions. A raw `.bundle`, serialized MonoBehaviour binary, or AssetStudio text dump is not a JSON export and is not supported by this version. Export them first.
+PNG, JPEG, WebP, TGA, BMP, and TIFF are supported. Use lossless exports such as PNG for the best results.

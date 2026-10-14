@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "magicundicer"
-version = "0.4.1"
+version = "1.1.0"
 description = "Bulk reconstruct Utage / AnaDos diced atlases using MonoBehaviour JSON"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,3 +21,6 @@ magicundicer = "magicundicer.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+magicundicer = ["assets/*.png"]

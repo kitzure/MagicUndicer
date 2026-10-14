@@ -36,16 +36,17 @@ class GuiValidationTests(unittest.TestCase):
         self.assertFalse(self.app.running)
         self.root.update()
 
-    def test_png_only_popup_and_no_output(self):
+    def test_png_only_popup_on_convert_and_no_output(self):
         fixture(self.folder)
         # Even a sibling JSON must be explicitly added for image-only GUI input.
         with patch("magicundicer.gui.messagebox.showerror") as popup:
             self.app.add_paths([self.folder / "sample_Atlas0.png"])
             self.root.update()
+            popup.assert_not_called()
+            self.app.start()
             popup.assert_called_once()
             self.assertEqual(popup.call_args.args[0], "MonoBehaviour JSON required")
             self.assertIn("matching MonoBehaviour JSON", popup.call_args.args[1])
-            self.app.start()
             self.assertFalse(self.app.running)
             self.assertFalse((self.folder / "out").exists())
             self.assertEqual(len(self.app.paths), 1)
@@ -54,14 +55,50 @@ class GuiValidationTests(unittest.TestCase):
             self.finish()
             self.assertIn("Check complete", self.app.status.get())
 
-    def test_jpeg_only_popup(self):
+    def test_jpeg_only_warns_without_popup(self):
         image = self.folder / "atlas.JPEG"
         Image.new("RGB", (64, 64)).save(image)
         with patch("magicundicer.gui.messagebox.showerror") as popup:
             self.app.add_paths([image])
             self.root.update()
-            popup.assert_called_once()
+            popup.assert_not_called()
             self.assertIn("JSON is missing", self.app.readiness.get())
+            self.assertEqual(self.app.selected_input, str(image.resolve()))
+
+    def test_remove_button_drops_file(self):
+        fixture(self.folder)
+        self.app.add_paths([self.folder / "sample_Atlas0.png", self.folder / "sample.json"])
+        self.assertIn("Ready", self.app.readiness.get())
+        self.assertEqual(self.app.atlas_section.rows[0].meta.cget("text"), "12 × 12 px")
+        self.assertEqual(self.app.json_section.rows[0].meta.cget("text"), "1 image")
+        self.app.json_section.rows[0].remove.invoke()
+        self.assertEqual(self.app.paths, [str((self.folder / "sample_Atlas0.png").resolve())])
+        self.assertEqual(self.app.json_section.rows, [])
+        self.assertIn("JSON is missing", self.app.readiness.get())
+        self.app.atlas_section.rows[0].remove.invoke()
+        self.assertEqual(self.app.paths, [])
+        self.assertIsNone(self.app.preview_path)
+
+    def test_unrelated_and_mismatched_json_are_flagged(self):
+        fixture(self.folder)
+        (self.folder / "IgnoreMe.json").write_text('{"foo": 1}', encoding="utf-8")
+        other = self.folder / "Other_Atlas0.png"
+        Image.new("RGBA", (12, 12)).save(other)
+        self.app.add_paths([other, self.folder / "sample.json", self.folder / "IgnoreMe.json"])
+        notes = [row.meta.cget("text") for row in self.app.json_section.rows]
+        self.assertIn("not for the selected atlas", notes[0])
+        self.assertIn("Not an atlas JSON", notes[1])
+        self.assertIn("no selected JSON uses it", self.app.atlas_section.rows[0].meta.cget("text"))
+        self.assertIn("may not belong together", self.app.readiness.get())
+
+    def test_theme_toggle_is_saved(self):
+        settings = self.folder / "settings.json"
+        with patch("magicundicer.gui.SETTINGS_PATH", settings):
+            before = self.app.theme_name
+            self.app.toggle_theme()
+            self.assertNotEqual(self.app.theme_name, before)
+            self.assertEqual(json.loads(settings.read_text(encoding="utf-8")), {"theme": self.app.theme_name})
+            self.assertEqual(self.app.preview.cget("background"), self.app.palette["surface_alt"])
 
     def test_combined_drop_does_not_warn(self):
         _, _, other = fixture(self.folder)

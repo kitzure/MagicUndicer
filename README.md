@@ -4,24 +4,30 @@
 
 # MagicUndicer
 
-Rebuild original images from diced texture atlases using a simple **GUI or CLI**. Made for Utage / AnaDos-style exports, without Excel commands or temporary tile files.
+Rebuild the original images from diced texture atlases with a simple **GUI or CLI**. Made for Utage / AnaDos-style exports, without Excel commands or temporary tile files.
 
-[Download for Windows](https://github.com/kitzure/MagicUndicer/releases) · No Python installation needed.
+[Download for Windows](https://github.com/kitzure/MagicUndicer/releases/latest) · No Python installation needed.
 
 ## How to use
 
-1. Export the **Texture2D atlas images** and matching **MonoBehaviour JSON** from AssetStudio.
-2. Open `MagicUndicer.exe`, add the atlas and JSON, and choose a save folder.
-3. Click **Undice images**. Use **Import export folder** to process a whole folder.
+1. Export the **Texture2D atlas** and its matching **MonoBehaviour JSON** from AssetStudio.
+2. Open `MagicUndicer.exe`. Add the atlas in step 1 and the JSON in step 2: click a box or drop the files on the window, and use ✕ to remove one.
+3. Click **Convert**. To process a whole export at once, use **Import a whole export folder instead**.
 
-Only selected files are processed. One atlas can produce many images, depending on its JSON.
+Switch between light and dark mode with the button in the top-right corner.
 
-**Why is the JSON needed?** The atlas stores the small image tiles; the MonoBehaviour JSON tells the app their order, padding, and original image sizes. The image alone is not enough to rebuild them.
+## How it works
 
-Prefer the terminal?
+To save memory, Utage cuts every sprite into a grid of small square cells and packs them into one shared atlas. Identical cells are stored only once, so sprites that differ only in their face share most of their cells, and fully transparent cells are not stored at all. That is why an exported atlas looks like a scrambled mosaic.
+
+The MonoBehaviour JSON is the map for putting the pieces back. It stores the cell size and padding, and for every image its name, original size, atlas, and a `cellIndexList`: which atlas cell goes into each slot of the grid. The atlas alone doesn't know which piece belongs where, so both files are needed.
+
+MagicUndicer creates an empty canvas at the original size and walks through that list. For each slot it finds the cell in the atlas, cuts off its padding border, and pastes it into place. Transparent slots stay empty and cells on the edges are trimmed to fit. Pixels are copied exactly and saved as PNG, so nothing is lost.
+
+## Prefer the terminal?
 
 ```powershell
 .\windows\MagicUndicer-CLI.exe "atlas.png" "metadata.json" -o "restored"
 ```
 
-PNG, JPEG, WebP, TGA, BMP, and TIFF are supported. Use lossless exports such as PNG for the best results.
+PNG, JPEG, WebP, TGA, BMP, and TIFF atlases are supported. Use lossless exports such as PNG for the best results.
